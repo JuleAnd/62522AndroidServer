@@ -16,26 +16,27 @@ def get_tasks():
         user_token = request.headers.get('Authorization')
         auth_token = User.verify_token(user_token)
         if auth_token == 401:
-            return jsonify(result="invalid token"), 401
+            return jsonify(result={'message':"invalid token"}), 401
         tasks = Task.objects(userid=auth_token)
-        return jsonify(result=tasks), 200
+        return jsonify(result={'tasks':tasks}), 200
     except KeyError:
-        return jsonify(result="Error in request"), 400
+        return jsonify(result={'message':"Error in request"}), 400
 
 
-@mod_task.route('/getById', methods=['GET'])
+@mod_task.route('/getById', methods=['POST'])
 def get_task_by_id():
     try:
         user_token = request.headers.get('Authorization')
         auth_token = User.verify_token(user_token)
         if auth_token == 401:
-            return jsonify(result="invalid token"), 401
-        task = Task.objects.get(userid=auth_token, taskid=str(request.args['taskid']))
+            return jsonify(result={'message':"invalid token"}), 401
+        data = json.loads(request.data)
+        task = Task.objects.get(userid=auth_token, taskid=data['taskid'])
         if task:
-            return jsonify(result=task), 200
-        return jsonify(result="could not find task"), 404
+            return jsonify(result={'task':task}), 200
+        return jsonify(result={'message':"could not find task"}), 404
     except KeyError:
-        return jsonify(result="Error in request"), 400
+        return jsonify(result={'message':"Error in request"}), 400
 
 
 @mod_task.route('/create', methods=['POST'])
@@ -44,7 +45,7 @@ def create_task():
         user_token = request.headers.get('Authorization')
         auth_token = User.verify_token(user_token)
         if auth_token == 401:
-            return jsonify(result="invalid token"), 401
+            return jsonify(result={'message':"invalid token"}), 401
         task_data = json.loads(request.data)
         #Get the creator
         creator = User.objects.get(userid=auth_token)
@@ -52,9 +53,9 @@ def create_task():
         # Create the task
         new_task = Task(userid=auth_token, taskid=str(ObjectId()), createdby=createdby, title=task_data['title'], description=task_data['description'])
         new_task.save()
-        return jsonify(result="Task sucessfully created"), 200
+        return jsonify(result={'message':"Task sucessfully created"}), 200
     except KeyError:
-        return jsonify(result="Error in request"), 400
+        return jsonify(result={'message':"Error in request"}), 400
 
 
 @mod_task.route('/edit', methods=['POST'])
@@ -63,28 +64,28 @@ def edit_task():
         user_token = request.headers.get('Authorization')
         auth_token = User.verify_token(user_token)
         if auth_token == 401:
-            return jsonify(result="invalid token"), 401
+            return jsonify(result={'message':"invalid token"}), 401
         task_data = json.loads(request.data)
         task = Task.objects.get(userid=auth_token, taskid=task_data['taskid'])
         task.title = task_data['title']
         task.description = task_data['description']
         task.save()
-        return jsonify(result=task), 200
+        return jsonify(result={'task':task}), 200
     except KeyError:
-        return jsonify(result="Error in request"), 400
+        return jsonify(result={'message':"Error in request"}), 400
 
 
-@mod_task.route('/delete', methods=['DELETE'])
+@mod_task.route('/delete', methods=['POST'])
 def delete_task():
     try:
         user_token = request.headers.get('Authorization')
         auth_token = User.verify_token(user_token)
         if auth_token == 401:
-            return jsonify(result="invalid token"), 401
-        # Create the task
-        task = Task.objects.get(userid=auth_token, taskid=str(request.args['taskid']))
+            return jsonify(result={'message':"invalid token"}), 401
+        data = json.loads(request.data)
+        task = Task.objects.get(userid=auth_token, taskid=data['taskid'])
         task.delete()
-        return jsonify(result="Task sucessfully deleted"), 200
+        return jsonify(result={'message':"Task sucessfully deleted"}), 200
     except Exception as ee:
-        ee.message
-        return jsonify(result="Error in request"), 400
+        print(ee.message)
+        return jsonify(result={'message':"Error in request"}), 400

@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import render_template
+from flask import render_template, jsonify
 from flask_cors import CORS
 from flask_mongoengine import MongoEngine
 import logging, logging.config
@@ -26,6 +26,10 @@ db_client = MongoEngine(app)
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/api/test")
+def connection_test():
+	return jsonify(result="allgood"), 200
 
 # Add the Blueprints
 from app.user.UserView import mod_user as user_module

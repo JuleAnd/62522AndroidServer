@@ -39,3 +39,7 @@ class User(db_client.Document):
             print("Bad sig")
             return 401
         return decoded_token['userid']
+
+    def get_profile(self):
+        return {'userid': self.userid, 'email': self.email, 'firstname': self.firstname, 'lastname': self.lastname}
+
